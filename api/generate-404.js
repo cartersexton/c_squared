@@ -9,8 +9,18 @@ export default async function handler(req, res) {
             }),
         });
 
-        const data = await ollamaResponse.json();
-        res.status(200).json({ message: data.response || "Oops! Page not found." });
+        const textResponse = await ollamaResponse.text(); // Get raw response for debugging
+
+        console.log("Ollama API Raw Response:", textResponse);
+
+        // Check if the response is valid JSON before parsing
+        try {
+            const data = JSON.parse(textResponse);
+            if (!data.response) throw new Error("Unexpected response format from Ollama.");
+            res.status(200).json({ message: data.response });
+        } catch (jsonError) {
+            throw new Error(`Invalid JSON response from Ollama: ${textResponse}`);
+        }
 
     } catch (error) {
         console.error("Error contacting Ollama API:", error);
