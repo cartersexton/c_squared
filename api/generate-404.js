@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const response = await fetch("69.54.142.142:11434/api/generate", {
+    const response = await fetch("http://69.54.142.142:11434/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model: "granite3-moe:1b", prompt: "Generate a funny 404 error message." }),
