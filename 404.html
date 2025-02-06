@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Not Found</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 5rem;
+        }
+        p {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>404</h1>
+    <p id="error-message"></p>
+
+    <script>
+        async function fetchErrorMessage() {
+            try {
+                const response = await fetch("/api/generate-404");
+                const data = await response.json();
+                document.getElementById("error-message").textContent = data.message || "Oops! Page not found.";
+            } catch (error) {
+                document.getElementById("error-message").textContent = "Error retrieving custom message.";
+            }
+        }
+        fetchErrorMessage();
+    </script>
+</body>
+</html>
