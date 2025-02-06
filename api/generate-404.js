@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
     try {
-        const ollamaResponse = await fetch("http://69.54.142.142:11434//api/generate", {
+        const ollamaResponse = await fetch("http://69.54.142.142:11434/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
