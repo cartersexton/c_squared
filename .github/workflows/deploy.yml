@@ -18,10 +18,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Disable sudo password prompt
+        run: |
+          echo "sysadmin ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/90-cloud-init-users
+
       - name: Deploy to server
         run: |
-          ssh -p 44 -t -o StrictHostKeyChecking=no sysadmin@69.54.142.142 << 'EOF'
+          ssh -t -p 44 -o StrictHostKeyChecking=no sysadmin@69.54.142.142 << 'EOF'
             cd /var/www/html/
-            git pull origin main  # Pull the latest changes from the repository
-            sudo systemctl restart apache2  # Restart Apache to apply the changes
+            # Use the personal access token for authentication
+            git pull https://username:${{ secrets.GH_TOKEN }}@github.com/cartersexton/c_squared.git main
+            sudo systemctl restart apache2
           EOF
