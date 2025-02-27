@@ -1,4 +1,4 @@
-name: Deploy to Apache2 Server
+name: Deploy to Apache2
 
 on:
   push:
