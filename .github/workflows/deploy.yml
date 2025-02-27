@@ -20,8 +20,8 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no user@your-server-ip << 'EOF'
-            cd /path/to/your/project
+          ssh -o StrictHostKeyChecking=no user@69.54.142.142:44 << 'EOF'
+            cd /var/www/html/
             git pull origin main  # Pull the latest changes from the repository
             sudo systemctl restart apache2  # Restart Apache to apply the changes
           EOF
