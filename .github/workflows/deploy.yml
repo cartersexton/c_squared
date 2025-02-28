@@ -1,32 +1,38 @@
-name: Deploy to Apache2
+name: Deploy to Apache2 Server
 
 on:
   push:
     branches:
-      - main  # Trigger deployment on push to the main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: Set Release Directory
+        run: echo "RELEASE_DIR=${{ vars.DEPLOY_PATH }}/releases/$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+      - name: Deploy to Server
+        uses: appleboy/scp-action@v0.1.4
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "."
+          target: "${{ env.RELEASE_DIR }}"
 
-      - name: Disable sudo password prompt
-        run: |
-          echo "sysadmin ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/90-cloud-init-users
-
-      - name: Deploy to server
-        run: |
-          ssh -t -p 44 -o StrictHostKeyChecking=no sysadmin@69.54.142.142 << 'EOF'
-            cd /var/www/html/
-            # Use the personal access token for authentication
-            git pull https://username:${{ secrets.GH_TOKEN }}@github.com/cartersexton/c_squared.git main
+      - name: Restart Apache and Update Symlink
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            ln -sfn ${{ env.RELEASE_DIR }} ${{ vars.DEPLOY_PATH }}/current
             sudo systemctl restart apache2
-          EOF
