@@ -34,5 +34,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            ln -sfn ${{ env.RELEASE_DIR }} ${{ vars.DEPLOY_PATH }}/current
-            sudo systemctl restart apache2
+            ln -sfn /var/www/myapp/releases/$(ls -t /var/www/myapp/releases | head -n 1) /var/www/myapp/current
+            echo '${{ secrets.SSH_PASSWORD }}' | sudo -S systemctl restart apache2
+
