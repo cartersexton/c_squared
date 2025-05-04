@@ -14,6 +14,9 @@
         #debug-log, #main-content, #options-menu, #vps-page, #ai-page, #error-404 {
             display: none;
         }
+        b {
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -25,6 +28,29 @@
 <div id="error-404"></div>
 
 <script>
+    let showDebug = false;
+
+    // Debug triggers
+    if (!localStorage.getItem('visited')) {
+        localStorage.setItem('visited', 'true');
+        showDebug = true;
+    }
+
+    if (sessionStorage.getItem('from404') === 'true') {
+        showDebug = true;
+        sessionStorage.removeItem('from404');
+    }
+
+    const lastActive = localStorage.getItem('lastActive');
+    if (lastActive && Date.now() - parseInt(lastActive) > 300000) {
+        showDebug = true;
+    }
+
+    // Update activity on user interaction
+    const updateActivity = () => localStorage.setItem('lastActive', Date.now());
+    window.addEventListener('mousemove', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+
     const debugLines = [
         "TELNET SKYJET04223@SKYJETNODE1.LOCAL",
         "[CPU STARTED VIA RAC TELNET]",
@@ -83,7 +109,7 @@
     CJS Labs VPS Service
 ================================================================================
     [Status: OPEN]
-    [Registration Form]
+    [Registration Form → <b>R</b>]
 
     About:
         CJS Labs provides VPS services to 4 Students each month.
@@ -101,7 +127,6 @@
     Other:
         If you need a different OS (Windows is not supported yet) or custom specs please let us know at cjslabs@hotmail.com
 
-    [ Press R for registration ]
     [ Press Enter to view options ]
 
 >
@@ -143,7 +168,7 @@ CPU: 0 PID: 404 Comm: page fault Not tainted 4.0.4 #1
 Hardware name: BK-0010-01
 
 RIP: 0010:locate_page+0x404/0xdeadbeef
-Code: Bad address at /missing-page
+Code: Bad address at {$unspecified}
 
 Process browser (pid: 404, stack limit = 0x7ffc404404)
 Stack:
@@ -152,7 +177,7 @@ Stack:
 
 CPU Registers:
  EAX: 0xdeadbeef EBX: 0x40404040 ECX: 0xfeedface
- EIP: Segmentation Fault: tried to access invalid memory
+ EIP: Segmentation Fault: tried to access {$unspecified}
 
 CR2: 0000000000000000
 ---[ end trace 404 ]---
@@ -160,10 +185,14 @@ Kernel panic: Attempted to fetch non-existent page
 
 Suggested Actions:
  - Check address and try again
- - Pretend it didn't happen
- - Find someone to complain to
+ - Clear browser cookies
+ - Relaunch your browser
+ - Reboot your device
+ - Contact cjslabs@hotmail.com if the issue persists
 
 [ Press Enter to reboot site ]
+
+>
 `.trim();
 
     const debugContainer = document.getElementById('debug-log');
@@ -177,8 +206,7 @@ Suggested Actions:
 
     function showDebugLine() {
         if (debugIndex < debugLines.length) {
-            debugContainer.innerText += debugLines[debugIndex] + '\n';
-            debugIndex++;
+            debugContainer.innerText += debugLines[debugIndex++] + '\n';
             setTimeout(showDebugLine, 300);
         } else {
             setTimeout(() => {
@@ -191,10 +219,9 @@ Suggested Actions:
 
     function typeText(text, container, callback) {
         let i = 0;
-        container.innerHTML = ''; // Reset content for typing
         function typeChar() {
             if (i < text.length) {
-                container.innerHTML += text[i++] === '\n' ? '<br>' : text[i - 1];
+                container.innerHTML += text[i++];
                 setTimeout(typeChar, 10);
             } else if (callback) {
                 callback();
@@ -226,7 +253,9 @@ Suggested Actions:
                 showAIPage();
             } else if (e.key === '0') {
                 document.removeEventListener('keydown', handler);
-                showOptionsMenu();
+                showMainPage();
+            } else if (e.key.toLowerCase() === 'r') {
+                window.location.href = 'https://forms.gle/rPRxbY15YqMicX117';
             } else {
                 document.removeEventListener('keydown', handler);
                 showErrorPage();
@@ -239,14 +268,17 @@ Suggested Actions:
             if (e.key === 'Enter') {
                 document.removeEventListener('keydown', handler);
                 showOptionsMenu();
-            } else if ((e.key === 'R' || e.key === 'r') && vpsPage.style.display === 'block') {
-                document.removeEventListener('keydown', handler);
-                window.location.href = 'https://forms.gle/rPRxbY15YqMicX117';
             } else {
                 document.removeEventListener('keydown', handler);
                 showErrorPage();
             }
         });
+    }
+    function showMainPage() {
+        clearScreens();
+        mainContent.innerText = "";
+        mainContent.style.display = 'block';
+        typeText(siteText, mainContent, listenForEnter);
     }
 
     function showOptionsMenu() {
@@ -272,13 +304,14 @@ Suggested Actions:
 
     function showErrorPage() {
         clearScreens();
-        errorPage.innerHTML = "";
+        errorPage.innerText = "";
         errorPage.style.display = 'block';
         typeText(errorText, errorPage, () => {
             document.addEventListener('keydown', function handler(e) {
                 if (e.key === 'Enter') {
                     document.removeEventListener('keydown', handler);
-                    location.reload(); // reload main page
+                    sessionStorage.setItem('from404', 'true');
+                    location.reload();
                 }
             });
         });
@@ -292,8 +325,13 @@ Suggested Actions:
         errorPage.style.display = 'none';
     }
 
-    debugContainer.style.display = 'block';
-    showDebugLine();
+    if (showDebug) {
+        debugContainer.style.display = 'block';
+        showDebugLine();
+    } else {
+        mainContent.style.display = 'block';
+        typeText(siteText, mainContent, listenForEnter);
+    }
 </script>
 </body>
 </html>
